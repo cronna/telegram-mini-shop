@@ -1,9 +1,40 @@
+# Node
 node_modules/
-backend/dist/
-frontend/build/
-*.env
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+/dist/
+/build/
+/frontend/build/
+/backend/dist/
+
+# Env
+.env
+.env.*
 backend/.env
 frontend/.env
+
+# Prisma
+prisma/dev.db*
+backend/prisma/dev.db*
+
+# Editor
 .vscode/
-.idea/
 .DS_Store
+*.local
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.tmp/
+.eslintcache
+
+# Others
+*.log
