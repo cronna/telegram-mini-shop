@@ -39,9 +39,19 @@ jobs:
           VITE_BASE: ${{ vars.VITE_BASE }}
         run: npm run build
 
-      - name: Add 404.html for SPA fallback
+      - name: Add 404.html for SPA fallback (best-effort)
+        working-directory: frontend
         run: |
-          cp frontend/build/client/index.html frontend/build/client/404.html
+          set -e
+          if [ -f build/client/index.html ]; then
+            cp build/client/index.html build/client/404.html
+          elif [ -f build/index.html ]; then
+            cp build/index.html build/404.html
+          elif [ -f dist/index.html ]; then
+            cp dist/index.html dist/404.html
+          else
+            echo "No index.html found, skipping 404 copy"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
