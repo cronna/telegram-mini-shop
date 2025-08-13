@@ -53,10 +53,24 @@ jobs:
             echo "No index.html found, skipping 404 copy"
           fi
 
+      - name: Resolve dist path
+        id: dist
+        run: |
+          if [ -d frontend/build/client ]; then
+            echo "path=frontend/build/client" >> $GITHUB_OUTPUT
+          elif [ -d frontend/build ]; then
+            echo "path=frontend/build" >> $GITHUB_OUTPUT
+          elif [ -d frontend/dist ]; then
+            echo "path=frontend/dist" >> $GITHUB_OUTPUT
+          else
+            echo "No build output found" >&2
+            exit 1
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend/build/client
+          path: ${{ steps.dist.outputs.path }}
 
   deploy:
     needs: build
