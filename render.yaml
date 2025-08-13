@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: mini-backend
+    env: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
+    startCommand: npx prisma migrate deploy && node dist/index.js
+    autoDeploy: true
+    rootDir: backend
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: ORIGIN
+        sync: false
+      - key: WEBAPP_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_PAYMENT_PROVIDER_TOKEN
+        sync: false
+      - key: ENABLE_PAYMENTS
+        value: "false"
+
+  - type: worker
+    name: mini-bot
+    env: node
+    region: frankfurt
+    plan: free
+    rootDir: backend
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/bot.js
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: WEBAPP_URL
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false

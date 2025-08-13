@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  pending
+  paid
+  cancelled
+}
+
+model User {
+  id         Int     @id @default(autoincrement())
+  telegramId String  @unique
+  firstName  String?
+  lastName   String?
+  username   String?
+  orders     Order[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Product {
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String
+  price       Int             // minor units (kopeks)
+  currency    String  @default("RUB")
+  categoryId  Int
+  category    Category        @relation(fields: [categoryId], references: [id])
+  images      ProductImage[]
+  variants    ProductVariant[]
+  orderItems  OrderItem[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  url       String
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model ProductVariant {
+  id        Int     @id @default(autoincrement())
+  name      String
+  value     String
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id                         Int          @id @default(autoincrement())
+  userId                     Int
+  user                       User         @relation(fields: [userId], references: [id])
+  items                      OrderItem[]
+  totalAmount                Int
+  currency                   String       @default("RUB")
+  status                     OrderStatus  @default(pending)
+  address                    Json?
+  invoiceLink                String?
+  providerPaymentChargeId    String?
+  telegramPaymentChargeId    String?
+  createdAt                  DateTime     @default(now())
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  order      Order   @relation(fields: [orderId], references: [id])
+  productId  Int
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Int
+  title      String
+}
