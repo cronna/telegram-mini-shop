@@ -6,13 +6,38 @@ services:
     plan: free
     rootDir: backend
     buildCommand: |
+      set -e
       npm ci --include=dev \
       && npm run prisma:generate \
       && cd ../frontend \
       && npm ci --include=dev \
       && npm run build:spa \
-      && mkdir -p ../backend/public && rm -rf ../backend/public/* \
-      && cp -r build/client/* ../backend/public/ \
+      && mkdir -p ../backend/public \
+      && rm -rf ../backend/public/* \
+      && cp -r build/client/assets ../backend/public/ \
+      && JS=$(ls build/client/assets/index-*.js 2>/dev/null | head -n1 || true) \
+      && if [ -z "$JS" ]; then JS=$(ls build/client/assets/entry.client-*.js 2>/dev/null | head -n1 || true); fi \
+      && CSS=$(ls build/client/assets/root-*.css 2>/dev/null | head -n1 || true) \
+      && if [ -z "$JS" ]; then echo "No client JS found" >&2; exit 1; fi \
+      && JS_REL="assets/$(basename "$JS")" \
+      && CSS_REL="" \
+      && if [ -n "$CSS" ]; then CSS_REL="assets/$(basename "$CSS")"; fi \
+      && printf '%s\n' \
+         '<!doctype html>' \
+         '<html lang="ru">' \
+         '  <head>' \
+         '    <meta charset="UTF-8" />' \
+         '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />' \
+         '    <title>Mini Shop</title>' \
+         "    ${CSS_REL:+<link rel=\"stylesheet\" href=\"$CSS_REL\" />}" \
+         '  </head>' \
+         '  <body>' \
+         '    <div id="root"></div>' \
+         "    <script type=\"module\" src=\"$JS_REL\"></script>" \
+         '  </body>' \
+         '</html>' \
+         > ../backend/public/index.html \
+      && cp ../backend/public/index.html ../backend/public/404.html \
       && cd ../backend \
       && npm run build
     startCommand: npx prisma migrate deploy && node dist/index.js
