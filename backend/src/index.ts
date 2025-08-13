@@ -1,9 +1,9 @@
-import './shim-fetch';
+import './shim-fetch.js';
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { config } from './config';
+import { config } from './config.js';
 import { PrismaClient } from '@prisma/client';
-import { verifyTelegramInitData, TelegramUser } from './telegram';
+import { verifyTelegramInitData, TelegramUser } from './telegram.js';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -60,8 +60,8 @@ app.get('/api/products', async (req, res) => {
         q
           ? {
               OR: [
-                { title: { contains: q, mode: 'insensitive' } },
-                { description: { contains: q, mode: 'insensitive' } },
+                { title: { contains: q } },
+                { description: { contains: q } },
               ],
             }
           : {},

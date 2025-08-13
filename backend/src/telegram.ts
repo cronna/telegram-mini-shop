@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import axios from 'axios';
-import { config } from './config';
+import { config } from './config.js';
 
 export type TelegramUser = {
   id: number;
