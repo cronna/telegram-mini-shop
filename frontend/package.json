@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "build:spa": "vite build",
+    "build:static": "react-router build && react-router export",
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc"
