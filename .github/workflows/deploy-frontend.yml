@@ -44,17 +44,17 @@ jobs:
           set -e
           OUT=frontend/build/client
           mkdir -p "$OUT"
-          JS=$(ls $OUT/assets/index-*.js 2>/dev/null | head -n1 || true)
+          JS=$(ls $OUT/assets/entry.client-*.js 2>/dev/null | head -n1 || true)
+          if [ -z "$JS" ]; then JS=$(ls $OUT/assets/index-*.js 2>/dev/null | head -n1 || true); fi
           CSS=$(ls $OUT/assets/root-*.css 2>/dev/null | head -n1 || true)
           if [ -z "$JS" ]; then
-            echo "No index-*.js found in $OUT/assets" >&2
+            echo "No entry JS found in $OUT/assets" >&2
             exit 1
           fi
           BASE="${{ vars.VITE_BASE }}"
           if [ -n "$BASE" ] && [ "$BASE" != "/" ]; then
             JS_PATH="$BASE${JS#frontend/build/client}"
-            CSS_PATH=""
-            if [ -n "$CSS" ]; then CSS_PATH="$BASE${CSS#frontend/build/client}"; fi
+            CSS_PATH=""; if [ -n "$CSS" ]; then CSS_PATH="$BASE${CSS#frontend/build/client}"; fi
           else
             JS_PATH="${JS#frontend/build/client/}"
             CSS_PATH="${CSS#frontend/build/client/}"
