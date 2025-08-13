@@ -39,7 +39,7 @@ jobs:
           VITE_BASE: ${{ vars.VITE_BASE }}
         run: npm run build:spa
 
-      - name: Generate index.html (CSR) from assets
+      - name: Generate index.html (CSR) from assets (relative URLs)
         run: |
           set -e
           OUT=frontend/build/client
@@ -51,14 +51,8 @@ jobs:
             echo "No client JS found in $OUT/assets" >&2
             exit 1
           fi
-          BASE="${{ vars.VITE_BASE }}"
-          if [ -n "$BASE" ] && [ "$BASE" != "/" ]; then
-            JS_PATH="$BASE${JS#frontend/build/client}"
-            CSS_PATH=""; if [ -n "$CSS" ]; then CSS_PATH="$BASE${CSS#frontend/build/client}"; fi
-          else
-            JS_PATH="${JS#frontend/build/client/}"
-            CSS_PATH="${CSS#frontend/build/client/}"
-          fi
+          JS_REL="${JS#frontend/build/client/}"
+          CSS_REL="${CSS#frontend/build/client/}"
           printf '%s\n' \
             '<!doctype html>' \
             '<html lang="ru">' \
@@ -66,11 +60,11 @@ jobs:
             '    <meta charset="UTF-8" />' \
             '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />' \
             '    <title>Mini Shop</title>' \
-            "    ${CSS_PATH:+<link rel=\"stylesheet\" href=\"$CSS_PATH\" />}" \
+            "    ${CSS:+<link rel=\"stylesheet\" href=\"$CSS_REL\" />}" \
             '  </head>' \
             '  <body>' \
             '    <div id="root"></div>' \
-            "    <script type=\"module\" src=\"$JS_PATH\"></script>" \
+            "    <script type=\"module\" src=\"$JS_REL\"></script>" \
             '  </body>' \
             '</html>' \
             > "$OUT/index.html"
