@@ -164,10 +164,11 @@ app.post('/api/orders', async (req, res) => {
   res.json({ orderId: order.id });
 });
 
-// Serve static frontend build if present
-const clientDir = path.resolve(__dirname, '../../frontend/build/client');
+// Serve static frontend build from backend/public
+const clientDir = path.resolve(__dirname, '../public');
 app.use(express.static(clientDir));
-app.get('*', (_req, res) => {
+// SPA fallback for anything not starting with /api
+app.get(/^\/(?!api\/).*/, (_req, res) => {
   res.sendFile(path.join(clientDir, 'index.html'));
 });
 
