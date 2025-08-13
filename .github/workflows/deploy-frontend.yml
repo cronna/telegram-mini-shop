@@ -32,51 +32,18 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build frontend (SPA to build/client)
+      - name: Build frontend (React Router export)
         working-directory: frontend
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_BASE: ${{ vars.VITE_BASE }}
-        run: npm run build:spa
-
-      - name: Generate index.html (CSR) from assets
-        run: |
-          set -e
-          OUT=frontend/build/client
-          mkdir -p "$OUT"
-          JS=$(ls $OUT/assets/entry.client-*.js 2>/dev/null | head -n1 || true)
-          if [ -z "$JS" ]; then JS=$(ls $OUT/assets/index-*.js 2>/dev/null | head -n1 || true); fi
-          CSS=$(ls $OUT/assets/root-*.css 2>/dev/null | head -n1 || true)
-          if [ -z "$JS" ]; then
-            echo "No entry JS found in $OUT/assets" >&2
-            exit 1
-          fi
-          BASE="${{ vars.VITE_BASE }}"
-          if [ -n "$BASE" ] && [ "$BASE" != "/" ]; then
-            JS_PATH="$BASE${JS#frontend/build/client}"
-            CSS_PATH=""; if [ -n "$CSS" ]; then CSS_PATH="$BASE${CSS#frontend/build/client}"; fi
-          else
-            JS_PATH="${JS#frontend/build/client/}"
-            CSS_PATH="${CSS#frontend/build/client/}"
-          fi
-          printf '%s\n' \
-            '<!doctype html>' \
-            '<html lang="ru">' \
-            '  <head>' \
-            '    <meta charset="UTF-8" />' \
-            '    <meta name="viewport" content="width=device-width, initial-scale=1.0" />' \
-            '    <title>Mini Shop</title>' \
-            "    ${CSS_PATH:+<link rel=\"stylesheet\" href=\"$CSS_PATH\" />}" \
-            '  </head>' \
-            '  <body>' \
-            '    <div id="root"></div>' \
-            "    <script type=\"module\" src=\"$JS_PATH\"></script>" \
-            '  </body>' \
-            '</html>' \
-            > "$OUT/index.html"
+        run: npm run build:static
 
       - name: Add 404.html for SPA fallback
-        run: cp frontend/build/client/index.html frontend/build/client/404.html
+        run: |
+          if [ -f frontend/build/client/index.html ]; then
+            cp frontend/build/client/index.html frontend/build/client/404.html
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
