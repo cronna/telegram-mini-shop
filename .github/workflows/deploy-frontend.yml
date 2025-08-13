@@ -39,6 +39,45 @@ jobs:
           VITE_BASE: ${{ vars.VITE_BASE }}
         run: npm run build:spa
 
+      - name: Generate index.html from built assets
+        run: |
+          set -e
+          OUT=frontend/build/client
+          mkdir -p "$OUT"
+          ENTRY=$(ls $OUT/assets/entry.client-*.js 2>/dev/null | head -n1 || true)
+          if [ -z "$ENTRY" ]; then
+            # fallback to any index-*.js if entry not found
+            ENTRY=$(ls $OUT/assets/index-*.js 2>/dev/null | head -n1 || true)
+          fi
+          if [ -z "$ENTRY" ]; then
+            echo "No entry script found in $OUT/assets" >&2
+            exit 1
+          fi
+          BASE="${{ vars.VITE_BASE }}"
+          echo "Using entry $ENTRY and base '$BASE'"
+          cat > $OUT/index.html <<'HTML'
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Shop</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <!-- ENTRY_PLACEHOLDER -->
+  </body>
+</html>
+HTML
+          # inject script tag
+          # normalize path for Pages base
+          if [ -n "$BASE" ] && [ "$BASE" != "/" ]; then
+            ENTRY_PATH="$BASE${ENTRY#frontend/build/client}"
+          else
+            ENTRY_PATH="${ENTRY#frontend/build/client/}"
+          fi
+          sed -i "s#<!-- ENTRY_PLACEHOLDER -->#<script type=\"module\" src=\"$ENTRY_PATH\"></script>#" $OUT/index.html
+
       - name: Add 404.html for SPA fallback
         run: cp frontend/build/client/index.html frontend/build/client/404.html
 
