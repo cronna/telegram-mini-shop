@@ -32,45 +32,21 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build frontend
+      - name: Build frontend (SPA)
         working-directory: frontend
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_BASE: ${{ vars.VITE_BASE }}
-        run: npm run build
+        run: npm run build:spa
 
-      - name: Add 404.html for SPA fallback (best-effort)
-        working-directory: frontend
-        run: |
-          set -e
-          if [ -f build/client/index.html ]; then
-            cp build/client/index.html build/client/404.html
-          elif [ -f build/index.html ]; then
-            cp build/index.html build/404.html
-          elif [ -f dist/index.html ]; then
-            cp dist/index.html dist/404.html
-          else
-            echo "No index.html found, skipping 404 copy"
-          fi
-
-      - name: Resolve dist path
-        id: dist
-        run: |
-          if [ -d frontend/build/client ]; then
-            echo "path=frontend/build/client" >> $GITHUB_OUTPUT
-          elif [ -d frontend/build ]; then
-            echo "path=frontend/build" >> $GITHUB_OUTPUT
-          elif [ -d frontend/dist ]; then
-            echo "path=frontend/dist" >> $GITHUB_OUTPUT
-          else
-            echo "No build output found" >&2
-            exit 1
-          fi
+      - name: Add 404.html for SPA fallback
+        working-directory: frontend/dist
+        run: cp index.html 404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ${{ steps.dist.outputs.path }}
+          path: frontend/dist
 
   deploy:
     needs: build
