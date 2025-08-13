@@ -32,18 +32,15 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Build frontend (React Router export)
+      - name: Build frontend (SPA to build/client)
         working-directory: frontend
         env:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_BASE: ${{ vars.VITE_BASE }}
-        run: npm run build:static
+        run: npm run build:spa
 
       - name: Add 404.html for SPA fallback
-        run: |
-          if [ -f frontend/build/client/index.html ]; then
-            cp frontend/build/client/index.html frontend/build/client/404.html
-          fi
+        run: cp frontend/build/client/index.html frontend/build/client/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
