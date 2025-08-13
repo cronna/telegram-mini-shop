@@ -4,10 +4,19 @@ services:
     env: node
     region: frankfurt
     plan: free
-    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
+    rootDir: backend
+    buildCommand: |
+      npm ci --include=dev \
+      && npm run prisma:generate \
+      && cd ../frontend \
+      && npm ci --include=dev \
+      && npm run build:spa \
+      && mkdir -p ../backend/public && rm -rf ../backend/public/* \
+      && cp -r build/client/* ../backend/public/ \
+      && cd ../backend \
+      && npm run build
     startCommand: npx prisma migrate deploy && node dist/index.js
     autoDeploy: true
-    rootDir: backend
     envVars:
       - key: NODE_VERSION
         value: 20
@@ -15,7 +24,7 @@ services:
         value: production
       - key: DATABASE_URL
         value: file:./dev.db
-      - key: ORIGIN
+      - key: ORIGINS
         sync: false
       - key: WEBAPP_URL
         sync: false

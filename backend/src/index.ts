@@ -1,9 +1,14 @@
 import './shim-fetch.js';
 import express, { Request, Response, NextFunction } from 'express';
+import path from 'path';
 import cors from 'cors';
 import { config } from './config.js';
 import { PrismaClient } from '@prisma/client';
 import { verifyTelegramInitData, TelegramUser } from './telegram.js';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const prisma = new PrismaClient();
@@ -157,6 +162,13 @@ app.post('/api/orders', async (req, res) => {
   });
 
   res.json({ orderId: order.id });
+});
+
+// Serve static frontend build if present
+const clientDir = path.resolve(__dirname, '../../frontend/build/client');
+app.use(express.static(clientDir));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(clientDir, 'index.html'));
 });
 
 app.listen(config.port, () => {
